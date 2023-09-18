@@ -1,0 +1,13 @@
+###
+GET http://localhost:3000/post?sender=asafi
+###
+GET http://localhost:3000/post/65080d84ca16c0f1f1ba116c
+###
+POST http://localhost:3000/post
+Content-Type: application/json
+
+{
+  "message": "new message",
+  "sender": "asaf"
+}
+###
