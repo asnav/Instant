@@ -55,4 +55,26 @@ const add_new_post = async (req, res, next) => {
     );
 };
 
-export { get_posts, get_post_by_id, add_new_post };
+const update_post = async (req, res, next) => {
+  const post = Post({
+    _id: req.params.id,
+    message: req.body.message,
+    sender: req.body.sender,
+  });
+
+  Post.updateOne(post)
+    .then((updated_post) =>
+      res.status(200).send({
+        status: "ok",
+        post: updated_post,
+      })
+    )
+    .catch((error) =>
+      res.status(400).send({
+        status: "fail",
+        message: error.message,
+      })
+    );
+};
+
+export { get_posts, get_post_by_id, add_new_post, update_post };
