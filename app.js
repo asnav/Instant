@@ -6,7 +6,7 @@ import post_router from "./routers/post_router.js";
 
 dotenv.config();
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
+await mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", (error) => {
   console.error(error);
@@ -19,5 +19,7 @@ app.use(bodyParser.json());
 app.use("/post", post_router);
 
 app.listen(process.env.PORT, () => {
-  console.log("Example app listening on port ${port}!");
+  console.log(`Server listening on port ${process.env.PORT}!`);
 });
+
+export default app;
