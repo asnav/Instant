@@ -61,14 +61,18 @@ const update_post = async (req, res, next) => {
     message: req.body.message,
     sender: req.body.sender,
   });
-
-  Post.updateOne(post)
-    .then((updated_post) =>
-      res.status(200).send({
-        status: "ok",
-        post: updated_post,
-      })
-    )
+  Post.findByIdAndUpdate(req.params.id, post)
+    .then((old_post) => {
+      if (old_post) {
+        res.status(200).send({
+          status: "ok",
+        });
+      } else {
+        res.status(404).send({
+          status: "post not found",
+        });
+      }
+    })
     .catch((error) =>
       res.status(400).send({
         status: "fail",

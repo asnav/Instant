@@ -13,11 +13,10 @@ Content-Type: application/json
   "sender": "asaf"
 }
 ###
-PUT http://localhost:3000/post/65119ce02e12fc0374b5708f
+PUT http://localhost:3000/post/65080d84ca16c0f1f1ba116
 Content-Type: application/json
 
 {
-  "_id": "65119ce02e12fc0374b5708f",
   "message": "brand new message",
   "sender": "new sender"
 }

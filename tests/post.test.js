@@ -71,4 +71,14 @@ describe("Testing Post API", () => {
     expect(verification_response.body.message).toEqual("new message");
     expect(verification_response.body.sender).toEqual("new sender");
   });
+
+  test("update non-existing post", async () => {
+    const response = await request(app)
+      .put(`/post/65080d84ca16c0f1f1ba116c`)
+      .send({
+        message: "new message",
+        sender: "new sender",
+      });
+    expect(response.statusCode).toEqual(404);
+  });
 });
