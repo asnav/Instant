@@ -1,6 +1,7 @@
 import Post from "../models/post_model.js";
+import {Request, Response} from "express";
 
-const get_posts = async (req, res, next) => {
+const get_posts = async (req: Request, res: Response) => {
   if (req.query.sender == null) {
     Post.find()
       .then((posts) => res.status(200).send(posts))
@@ -22,7 +23,7 @@ const get_posts = async (req, res, next) => {
   }
 };
 
-const get_post_by_id = async (req, res, next) => {
+const get_post_by_id = async (req: Request, res: Response) => {
   Post.findById(req.params.id)
     .then((post) => res.status(200).send(post))
     .catch((error) =>
@@ -33,8 +34,8 @@ const get_post_by_id = async (req, res, next) => {
     );
 };
 
-const add_new_post = async (req, res, next) => {
-  const post = Post({
+const add_new_post = async (req: Request, res: Response) => {
+  const post = new Post({
     message: req.body.message,
     sender: req.body.sender,
   });
@@ -55,8 +56,8 @@ const add_new_post = async (req, res, next) => {
     );
 };
 
-const update_post = async (req, res, next) => {
-  const post = Post({
+const update_post = async (req: Request, res: Response) => {
+  const post = new Post({
     _id: req.params.id,
     message: req.body.message,
     sender: req.body.sender,
