@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import express from "express";
 import bodyParser from "body-parser";
 import post_router from "./routers/post_router.js";
+import auth_router from "./routers/auth_router.js";
 
 dotenv.config();
 
@@ -18,5 +19,6 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true, limit: "1mb" }));
 app.use(bodyParser.json());
 app.use("/post", post_router);
+app.use("/auth", auth_router);
 
 export default app;
