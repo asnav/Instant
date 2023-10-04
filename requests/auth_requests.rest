@@ -1,0 +1,33 @@
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "other",
+  "email": "user@gmail.com",
+  "password": "pass123"
+}
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "user@gmail.com",
+  "password": "pass123"
+}
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "asnav",
+  "password": "asaf12345"
+}
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "asnav",
+  "email": "asnav1999@gmail.com"
+}
+###
