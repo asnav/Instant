@@ -3,10 +3,11 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Schema from "mongoose";
 dotenv.config();
 
-const sendError = async (res, err) => {
-  res.status(400).send({
+const sendError = async (res: Response, code: number, err: string) => {
+  res.status(code).send({
     status: "failed",
     message: err,
   });
@@ -18,20 +19,20 @@ const register = async (req: Request, res: Response) => {
   const password = req.body.password;
 
   if (username == null) {
-    return sendError(res, "username missing");
+    return sendError(res, 400, "username missing");
   } else if (email == null) {
-    return sendError(res, "email missing");
+    return sendError(res, 400, "email missing");
   } else if (password == null) {
-    return sendError(res, "password missing");
+    return sendError(res, 400, "password missing");
   }
 
   try {
     let user = await User.findOne({ username: username });
-    if (user) return sendError(res, "username already taken");
+    if (user) return sendError(res, 400, "username already taken");
     user = await User.findOne({ email: email });
-    if (user) return sendError(res, "email already used");
+    if (user) return sendError(res, 400, "email already used");
   } catch (err) {
-    return sendError(res, err);
+    return sendError(res, 400, err);
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -40,14 +41,27 @@ const register = async (req: Request, res: Response) => {
     username: username,
     email: email,
     password: password_hash,
+    tokens: [],
   });
 
   user
     .save()
     .then((user_object) => res.status(200).send(user_object))
     .catch((err) => {
-      sendError(res, err);
+      sendError(res, 400, err);
     });
+};
+
+const generateTokens = (_id: Schema.Types.ObjectId): [string, string] => {
+  const access_token = jwt.sign({ _id: _id }, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: process.env.JWT_ACCESS_EXPIRATION,
+  });
+
+  const refresh_token = jwt.sign({ _id: _id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRATION,
+  });
+
+  return [access_token, refresh_token];
 };
 
 const login = async (req: Request, res: Response) => {
@@ -55,27 +69,27 @@ const login = async (req: Request, res: Response) => {
   const password = req.body.password;
 
   if (identifier == null) {
-    return sendError(res, "username or email missing");
+    return sendError(res, 400, "username or email missing");
   } else if (password == null) {
-    return sendError(res, "password missing");
+    return sendError(res, 400, "password missing");
   }
 
   try {
     let user = await User.findOne({ username: identifier });
     if (!user) user = await User.findOne({ email: identifier });
-    if (!user) return sendError(res, "incorrect identifier or password");
+    if (!user) return sendError(res, 400, "incorrect identifier or password");
 
     if (!(await bcrypt.compare(password, user.password)))
-      return sendError(res, "incorrect identifier or password");
+      return sendError(res, 400, "incorrect identifier or password");
 
-    const access_token = jwt.sign(
-      { _id: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
-    );
-    res.status(200).send({ access_token: access_token });
+    const [access_token, refresh_token] = generateTokens(user._id);
+    user.tokens.push(refresh_token);
+    await user.save();
+    res
+      .status(200)
+      .send({ access_token: access_token, refresh_token: refresh_token });
   } catch (err) {
-    return sendError(res, err);
+    return sendError(res, 400, err);
   }
 };
 
@@ -85,20 +99,68 @@ const authenticate = async (
   next: NextFunction
 ) => {
   const authHeaders = req.headers["authorization"];
-  if (authHeaders) {
-    const token = authHeaders && authHeaders.split(" ")[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-      if (err) return res.status(403).send(err.message);
-      console.log(user);
-      //req.user = user;
+  const token = authHeaders && authHeaders.split(" ")[1];
+  if (token) {
+    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
+      if (err) return sendError(res, 403, err.message);
+      req.userId = user["_id"];
       next();
     });
-  } else return res.sendStatus(401);
+  } else sendError(res, 401, "authentication missing");
+};
+
+const refresh = async (req: Request, res: Response) => {
+  const authHeaders = req.headers["authorization"];
+  const token = authHeaders && authHeaders.split(" ")[1];
+  if (!token) return sendError(res, 401, "authentication missing");
+  jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, user) => {
+    if (err) return sendError(res, 403, err.message);
+
+    await User.findById(user["_id"])
+      .then(async (user) => {
+        if (!user) return sendError(res, 403, "invalid request");
+
+        if (!user.tokens.includes(token)) {
+          user.tokens = [];
+          await user.save();
+          return sendError(res, 403, "invalid request");
+        }
+
+        const [access_token, refresh_token] = generateTokens(user._id);
+        user.tokens[user.tokens.indexOf(token)] = refresh_token;
+        await user.save();
+        res
+          .status(200)
+          .send({ access_token: access_token, refresh_token: refresh_token });
+      })
+      .catch((err) => sendError(res, 403, err));
+  });
 };
 
 const logout = async (req: Request, res: Response) => {
-  console.log("logout");
-  sendError(res, "not implemented");
+  const authHeaders = req.headers["authorization"];
+  const token = authHeaders && authHeaders.split(" ")[1];
+  if (!token) return sendError(res, 401, "authentication missing");
+  jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, user) => {
+    if (err) return sendError(res, 403, err.message);
+
+    await User.findById(user["_id"])
+      .then(async (user) => {
+        if (!user) return sendError(res, 403, "invalid request");
+
+        if (!user.tokens.includes(token)) {
+          user.tokens = [];
+          await user.save();
+          return sendError(res, 403, "invalid request");
+        }
+
+        user.tokens.splice(user.tokens.indexOf(token), 1);
+        await user.save();
+
+        res.sendStatus(200);
+      })
+      .catch((err) => sendError(res, 403, err));
+  });
 };
 
-export { register, login, authenticate, logout };
+export { register, login, authenticate, refresh, logout };

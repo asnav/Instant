@@ -12,7 +12,7 @@ const user = {
 let token: string;
 
 beforeAll(async () => {
-  User.deleteOne({ username: user.username });
+  await User.deleteMany();
   await Post.deleteMany();
   await request(app).post("/auth/register").send(user);
   token = (
@@ -24,7 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  User.deleteOne({ username: user.username });
+  await User.deleteMany();
   await Post.deleteMany();
   await mongoose.connection.close();
 });

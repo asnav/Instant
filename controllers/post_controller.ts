@@ -1,5 +1,5 @@
 import Post from "../models/post_model.js";
-import {Request, Response} from "express";
+import { Request, Response } from "express";
 
 const get_posts = async (req: Request, res: Response) => {
   if (req.query.sender == null) {
