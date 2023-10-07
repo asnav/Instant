@@ -2,16 +2,10 @@ import User from "../models/user_model.js";
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import Schema from "mongoose";
+import sendError from "./helpers/send_error.js";
+import dotenv from "dotenv";
 dotenv.config();
-
-const sendError = async (res: Response, code: number, err: string) => {
-  res.status(code).send({
-    status: "failed",
-    message: err,
-  });
-};
 
 const register = async (req: Request, res: Response) => {
   const username = req.body.username;
@@ -46,9 +40,9 @@ const register = async (req: Request, res: Response) => {
 
   user
     .save()
-    .then((user_object) => res.status(200).send(user_object))
-    .catch((err) => {
-      sendError(res, 400, err);
+    .then(() => res.sendStatus(200))
+    .catch(() => {
+      sendError(res, 400, "registration failed please try againg later");
     });
 };
 
@@ -89,7 +83,7 @@ const login = async (req: Request, res: Response) => {
       .status(200)
       .send({ access_token: access_token, refresh_token: refresh_token });
   } catch (err) {
-    return sendError(res, 400, err);
+    return sendError(res, 400, "failed logging in please try againg later");
   }
 };
 
@@ -102,7 +96,9 @@ const authenticate = async (
   const token = authHeaders && authHeaders.split(" ")[1];
   if (token) {
     jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
-      if (err) return sendError(res, 403, err.message);
+      if (err && err.message == "jwt expired")
+        return sendError(res, 403, err.message);
+      if (err) return sendError(res, 403, "authentication failed");
       req.userId = user["_id"];
       next();
     });
@@ -114,6 +110,8 @@ const refresh = async (req: Request, res: Response) => {
   const token = authHeaders && authHeaders.split(" ")[1];
   if (!token) return sendError(res, 401, "authentication missing");
   jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, user) => {
+    if (err && err.message == "jwt expired")
+      return sendError(res, 403, err.message);
     if (err) return sendError(res, 403, err.message);
 
     await User.findById(user["_id"])
@@ -142,7 +140,9 @@ const logout = async (req: Request, res: Response) => {
   const token = authHeaders && authHeaders.split(" ")[1];
   if (!token) return sendError(res, 401, "authentication missing");
   jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, user) => {
-    if (err) return sendError(res, 403, err.message);
+    if (err && err.message == "jwt expired")
+      return sendError(res, 403, err.message);
+    if (err) return sendError(res, 403, "authentication failed");
 
     await User.findById(user["_id"])
       .then(async (user) => {

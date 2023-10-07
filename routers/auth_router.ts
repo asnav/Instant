@@ -23,10 +23,6 @@ const router = express.Router();
  *    responses:
  *      200:
  *        description: Registration successful
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/FullUser'
  *      400:
  *        description: Registration failed
  *        content:
@@ -87,7 +83,7 @@ router.post("/login", login);
  *            schema:
  *              $ref: '#/components/schemas/Error'
  *      403:
- *        description: Authentication failed
+ *        description: Authentication failed/ jwt expired
  *        content:
  *          application/json:
  *            schema:
@@ -107,8 +103,14 @@ router.get("/refresh", refresh);
  *    responses:
  *      200:
  *        description: logout completed successfully
+ *      401:
+ *        description: Authentication missing
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
  *      403:
- *        description: Authentication failed
+ *        description: Authentication failed/ jwt expired
  *        content:
  *          application/json:
  *            schema:

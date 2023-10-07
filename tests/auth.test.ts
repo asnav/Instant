@@ -113,10 +113,7 @@ describe("Authentication Tests", () => {
     const response = await request(app)
       .post("/post")
       .set("Authorization", "jwt " + access_token)
-      .send({
-        message: "this is my test post",
-        sender: user.username,
-      });
+      .send({ message: "this is my test post" });
     expect(response.statusCode).toEqual(200);
   });
 

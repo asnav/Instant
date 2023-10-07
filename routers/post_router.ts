@@ -70,6 +70,12 @@ router.get("/", get_posts);
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Error'
+ *      404:
+ *        description: post not found.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
  */
 router.get("/:id", get_post_by_id);
 
@@ -96,6 +102,18 @@ router.get("/:id", get_post_by_id);
  *              $ref: '#/components/schemas/RetrievedPost'
  *      400:
  *        description: post upload failed
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ *      401:
+ *        description: Authentication missing
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ *      403:
+ *        description: Authentication failed/ jwt expired
  *        content:
  *          application/json:
  *            schema:
@@ -133,6 +151,18 @@ router.post("/", authenticate, add_new_post);
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Error'
+ *      401:
+ *        description: Authentication missing
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ *      403:
+ *        description: Authentication failed/ jwt expired
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
  *      404:
  *        description: post not found
  *        content:
@@ -155,17 +185,12 @@ export default router;
  *      type: object
  *      required:
  *        - message
- *        - sender
  *      properties:
  *        message:
  *          type: string
  *          description: The post's content
- *        sender:
- *          type: string
- *          description: The username of the user who owns the post
  *      example:
  *        message: 'message'
- *        sender: 'bob'
  *
  *    RetrievedPost:
  *      type: object
