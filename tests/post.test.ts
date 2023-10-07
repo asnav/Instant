@@ -41,40 +41,43 @@ describe("Testing Post API", () => {
         message: postMessage,
         sender: user.username,
       });
-    postID = response.body.post._id;
+    postID = response.body._id;
     expect(response.statusCode).toEqual(200);
-    const newPost = response.body.post;
+    const newPost = response.body;
     expect(newPost.message).toEqual(postMessage);
     const response2 = await request(app).get("/post/" + newPost._id);
     expect(response2.statusCode).toEqual(200);
-    const post2 = response2.body;
+    const post2 = response2.body[0];
     expect(post2.message).toEqual(postMessage);
   });
 
   test("get all posts", async () => {
     const response = await request(app).get("/post");
+    const post = response.body[0];
     expect(response.statusCode).toEqual(200);
-    expect(response.body[0]._id).toEqual(postID);
-    expect(response.body[0].message).toEqual(postMessage);
-    expect(response.body[0].sender).toEqual(user.username);
     expect(response.body.length).toEqual(1);
+    expect(post._id).toEqual(postID);
+    expect(post.message).toEqual(postMessage);
+    expect(post.sender).toEqual(user.username);
   });
 
   test("get post by id", async () => {
     const response = await request(app).get(`/post/${postID}`);
+    const post = response.body[0];
     expect(response.statusCode).toEqual(200);
-    expect(response.body._id).toEqual(postID);
-    expect(response.body.message).toEqual(postMessage);
-    expect(response.body.sender).toEqual(user.username);
+    expect(post._id).toEqual(postID);
+    expect(post.message).toEqual(postMessage);
+    expect(post.sender).toEqual(user.username);
   });
 
   test("get posts by sender", async () => {
     const response = await request(app).get("/post?sender=user");
+    const post = response.body[0];
     expect(response.statusCode).toEqual(200);
-    expect(response.body[0]._id).toEqual(postID);
-    expect(response.body[0].message).toEqual(postMessage);
-    expect(response.body[0].sender).toEqual(user.username);
     expect(response.body.length).toEqual(1);
+    expect(post._id).toEqual(postID);
+    expect(post.message).toEqual(postMessage);
+    expect(post.sender).toEqual(user.username);
   });
 
   test("update post", async () => {
@@ -87,11 +90,10 @@ describe("Testing Post API", () => {
       });
     expect(response.statusCode).toEqual(200);
     const verification_response = await request(app).get(`/post/${postID}`);
-    expect(verification_response.body._id).toEqual(postID);
-    expect(verification_response.body.message).not.toEqual(postMessage);
-    expect(verification_response.body.sender).not.toEqual(user.username);
-    expect(verification_response.body.message).toEqual("new message");
-    expect(verification_response.body.sender).toEqual("new sender");
+    const post = verification_response.body[0];
+    expect(post._id).toEqual(postID);
+    expect(post.message).toEqual("new message");
+    expect(post.sender).toEqual("new sender");
   });
 
   test("update non-existing post", async () => {

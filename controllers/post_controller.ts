@@ -25,7 +25,7 @@ const get_posts = async (req: Request, res: Response) => {
 
 const get_post_by_id = async (req: Request, res: Response) => {
   Post.findById(req.params.id)
-    .then((post) => res.status(200).send(post))
+    .then((post) => res.status(200).send(post ? [post] : []))
     .catch((error) =>
       res.status(400).send({
         status: "fail",
@@ -42,12 +42,7 @@ const add_new_post = async (req: Request, res: Response) => {
 
   post
     .save()
-    .then((new_post) =>
-      res.status(200).send({
-        status: "ok",
-        post: new_post,
-      })
-    )
+    .then((new_post) => res.status(200).send(new_post))
     .catch((error) =>
       res.status(400).send({
         status: "fail",
@@ -65,9 +60,7 @@ const update_post = async (req: Request, res: Response) => {
   Post.findByIdAndUpdate(req.params.id, post)
     .then((old_post) => {
       if (old_post) {
-        res.status(200).send({
-          status: "ok",
-        });
+        res.sendStatus(200);
       } else {
         res.status(404).send({
           status: "post not found",
@@ -76,7 +69,7 @@ const update_post = async (req: Request, res: Response) => {
     })
     .catch((error) =>
       res.status(400).send({
-        status: "fail",
+        status: "failed",
         message: error.message,
       })
     );
