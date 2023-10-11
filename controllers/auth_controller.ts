@@ -94,15 +94,14 @@ const authenticate = async (
 ) => {
   const authHeaders = req.headers["authorization"];
   const token = authHeaders && authHeaders.split(" ")[1];
-  if (token) {
-    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
-      if (err && err.message == "jwt expired")
-        return sendError(res, 403, err.message);
-      if (err) return sendError(res, 403, "authentication failed");
-      req.userId = user["_id"];
-      next();
-    });
-  } else sendError(res, 401, "authentication missing");
+  if (!token) return sendError(res, 401, "authentication missing");
+  jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
+    if (err && err.message == "jwt expired")
+      return sendError(res, 403, err.message);
+    if (err) return sendError(res, 403, "authentication failed");
+    req.userId = user["_id"];
+    next();
+  });
 };
 
 const refresh = async (req: Request, res: Response) => {
