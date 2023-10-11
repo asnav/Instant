@@ -13,29 +13,22 @@ const user = {
   email: "user@email.com",
   password: "Password123",
 };
+let token: string;
 
-beforeAll((done) => {
-  User.deleteMany().then(() =>
-    Post.deleteMany().then(() =>
-      request(server)
-        .post("/auth/register")
-        .send(user)
-        .then(() =>
-          request(server)
-            .post("/auth/login")
-            .send({
-              identifier: user.username,
-              password: user.password,
-            })
-            .then((user) => {
-              clientSocket = Client(`http://localhost:${process.env.PORT}`, {
-                auth: { token: `jwt ${user.body.access_token}` },
-              });
-              clientSocket.on("connect", done);
-            })
-        )
-    )
-  );
+beforeAll(async () => {
+  await User.deleteMany();
+  await Post.deleteMany();
+  await request(server).post("/auth/register").send(user);
+  token = (
+    await request(server).post("/auth/login").send({
+      identifier: user.username,
+      password: user.password,
+    })
+  ).body.access_token;
+  clientSocket = Client(`http://localhost:${process.env.PORT}`, {
+    auth: { token: `jwt ${token}` },
+  });
+  new Promise((resolve) => clientSocket.on("connect", () => resolve(true)));
 });
 
 afterAll(() => {
