@@ -29,7 +29,7 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-describe("Testing Post API", () => {
+describe("Post API tests", () => {
   const postMessage = "this is my test post";
   let postID: string;
 

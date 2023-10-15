@@ -2,9 +2,12 @@ import http from "http";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 
+import chatHandler from "./socket/chat_handler.js";
+
 export default (server: http.Server) => {
   const io = new Server(server);
 
+  //auth
   io.use(async (socket, next) => {
     let token = socket.handshake.auth.token;
     if (token == null) return next(new Error("Authentication error"));
@@ -16,12 +19,13 @@ export default (server: http.Server) => {
     });
   });
 
+  //register handlers and assign rooms
   io.on("connection", (socket) => {
-    console.log("a user connected" + socket.id);
-    socket.onAny((eventName, args) => {
-      console.log("on event: " + eventName);
-      socket.emit("echo", args);
-    });
+    socket.join(socket.data.user);
+    socket.join("global");
+    socket.on("echo", (args) => socket.emit("echo", args));
+    chatHandler(io, socket);
   });
+
   return io;
 };

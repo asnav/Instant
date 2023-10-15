@@ -37,13 +37,19 @@ afterAll(() => {
   mongoose.connection.close();
 });
 
-describe("my awesome project", () => {
-  test("should work", (done) => {
-    clientSocket.emit("hello", { msg: "hello" });
-    clientSocket.onAny((eventName, arg) => {
-      console.log("on any");
-      expect(eventName).toBe("echo");
+describe("Socket functionality tests", () => {
+  test("echo test", (done) => {
+    clientSocket.emit("echo", { msg: "hello" });
+    clientSocket.on("echo", (arg) => {
       expect(arg.msg).toBe("hello");
+      done();
+    });
+  });
+  test("self DM test", (done) => {
+    clientSocket.emit("ims:sendDirect", { message: "hello" });
+    clientSocket.on("ims:sendDirect", (arg) => {
+      expect(arg.message).toBe("hello");
+      expect(arg.to).toEqual(arg.from);
       done();
     });
   });
