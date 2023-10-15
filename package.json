@@ -1,5 +1,5 @@
 {
-  "name": "instant",
+  "name": "instant-Back",
   "version": "1.0.0",
   "description": "a backend server for a social media application",
   "main": "app.js",
