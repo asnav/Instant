@@ -178,6 +178,7 @@ export default router;
  *      required:
  *        - accessToken
  *        - refreshToken
+ *        - userId
  *      properties:
  *        accessToken:
  *          type: string
@@ -185,9 +186,13 @@ export default router;
  *        refreshToken:
  *          type: string
  *          description: The JWT refresh token
+ *        userId:
+ *          type: string
+ *          description: The User's ID
  *      example:
  *        accessToken: '123cd123x1xx1'
  *        refreshToken: '134r2134cr1x3c'
+ *        userId: '123asdg87g8s'
  *
  *    Error:
  *      type: object

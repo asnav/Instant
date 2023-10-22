@@ -79,9 +79,11 @@ const login = async (req: Request, res: Response) => {
     const [access_token, refresh_token] = generateTokens(user._id);
     user.tokens.push(refresh_token);
     await user.save();
-    res
-      .status(200)
-      .send({ access_token: access_token, refresh_token: refresh_token });
+    res.status(200).send({
+      access_token: access_token,
+      refresh_token: refresh_token,
+      userId: user._id,
+    });
   } catch (err) {
     return sendError(res, 400, "failed logging in please try againg later");
   }
@@ -126,9 +128,11 @@ const refresh = async (req: Request, res: Response) => {
         const [access_token, refresh_token] = generateTokens(user._id);
         user.tokens[user.tokens.indexOf(token)] = refresh_token;
         await user.save();
-        res
-          .status(200)
-          .send({ access_token: access_token, refresh_token: refresh_token });
+        res.status(200).send({
+          access_token: access_token,
+          refresh_token: refresh_token,
+          userId: user._id,
+        });
       })
       .catch((err) => sendError(res, 403, err));
   });

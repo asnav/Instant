@@ -24,6 +24,7 @@ describe("Authentication Tests", () => {
   };
   let access_token: string;
   let refresh_token: string;
+  let userId: string;
 
   test("request posting with no token", async () => {
     const response = await request(app).post("/post").send({
@@ -67,6 +68,7 @@ describe("Authentication Tests", () => {
     expect(response.body.access_token).not.toBeUndefined();
     expect(response.body.refresh_token).not.toBeUndefined();
     expect(response.body.access_token).not.toEqual(response.body.refresh_token);
+    expect(response.body.userId).not.toBeUndefined();
   });
 
   test("login with email and password", async () => {
@@ -78,8 +80,10 @@ describe("Authentication Tests", () => {
     expect(response.body.access_token).not.toBeUndefined();
     expect(response.body.refresh_token).not.toBeUndefined();
     expect(response.body.access_token).not.toEqual(response.body.refresh_token);
+    expect(response.body.userId).not.toBeUndefined();
     access_token = response.body.access_token;
     refresh_token = response.body.refresh_token;
+    userId = response.body.userId;
   });
 
   test("login with unregistered identifier", async () => {
@@ -149,6 +153,7 @@ describe("Authentication Tests", () => {
     expect(response.statusCode).toEqual(200);
     expect(response.body.access_token).not.toEqual(access_token);
     expect(response.body.refresh_token).not.toEqual(refresh_token);
+    expect(response.body.userId).toEqual(userId);
     access_token = response.body.access_token;
     refresh_token = response.body.refresh_token;
   });
