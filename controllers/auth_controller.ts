@@ -129,8 +129,8 @@ const refresh = async (req: Request, res: Response) => {
         user.tokens[user.tokens.indexOf(token)] = refresh_token;
         await user.save();
         res.status(200).send({
-          access_token: access_token,
-          refresh_token: refresh_token,
+          accessToken: access_token,
+          refreshToken: refresh_token,
           userId: user._id,
         });
       })

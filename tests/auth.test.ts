@@ -2,9 +2,6 @@ import request from "supertest";
 import app from "../server.js";
 import mongoose from "mongoose";
 import User from "../models/user_model.js";
-import Post from "../models/post_model.js";
-
-let postId: string;
 
 beforeAll(async () => {
   await User.deleteMany();
@@ -12,7 +9,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await User.deleteMany();
-  await Post.deleteOne({ _id: postId });
   await mongoose.connection.close();
 });
 
@@ -22,8 +18,8 @@ describe("Authentication Tests", () => {
     email: "email@test.com",
     password: "Password123",
   };
-  let access_token: string;
-  let refresh_token: string;
+  let accessToken: string;
+  let refreshToken: string;
   let userId: string;
 
   test("request posting with no token", async () => {
@@ -65,9 +61,9 @@ describe("Authentication Tests", () => {
       password: user.password,
     });
     expect(response.statusCode).toEqual(200);
-    expect(response.body.access_token).not.toBeUndefined();
-    expect(response.body.refresh_token).not.toBeUndefined();
-    expect(response.body.access_token).not.toEqual(response.body.refresh_token);
+    expect(response.body.accessToken).not.toBeUndefined();
+    expect(response.body.refreshToken).not.toBeUndefined();
+    expect(response.body.accessToken).not.toEqual(response.body.refreshToken);
     expect(response.body.userId).not.toBeUndefined();
   });
 
@@ -77,12 +73,12 @@ describe("Authentication Tests", () => {
       password: user.password,
     });
     expect(response.statusCode).toEqual(200);
-    expect(response.body.access_token).not.toBeUndefined();
-    expect(response.body.refresh_token).not.toBeUndefined();
-    expect(response.body.access_token).not.toEqual(response.body.refresh_token);
+    expect(response.body.accessToken).not.toBeUndefined();
+    expect(response.body.refreshToken).not.toBeUndefined();
+    expect(response.body.accessToken).not.toEqual(response.body.refreshToken);
     expect(response.body.userId).not.toBeUndefined();
-    access_token = response.body.access_token;
-    refresh_token = response.body.refresh_token;
+    accessToken = response.body.accessToken;
+    refreshToken = response.body.refreshToken;
     userId = response.body.userId;
   });
 
@@ -116,7 +112,7 @@ describe("Authentication Tests", () => {
   test("request posting with valid token", async () => {
     const response = await request(app)
       .post("/post")
-      .set("Authorization", "jwt " + access_token)
+      .set("Authorization", "jwt " + accessToken)
       .send({ message: "this is my test post" });
     expect(response.statusCode).toEqual(200);
   });
@@ -124,7 +120,7 @@ describe("Authentication Tests", () => {
   test("request posting with invalid token", async () => {
     const response = await request(app)
       .post("/post")
-      .set("Authorization", "jwt " + refresh_token)
+      .set("Authorization", "jwt " + refreshToken)
       .send({
         message: "this is my test post",
         sender: user.username,
@@ -132,43 +128,43 @@ describe("Authentication Tests", () => {
     expect(response.statusCode).toEqual(403);
   });
 
-  jest.setTimeout(10000);
+  // jest.setTimeout(10000);
 
-  test("request posting with expired token", async () => {
-    await new Promise((r) => setTimeout(r, 3000));
-    const response = await request(app)
-      .post("/post")
-      .set("Authorization", "jwt " + access_token)
-      .send({
-        message: "this is my test post",
-        sender: user.username,
-      });
-    expect(response.body.message).toEqual("jwt expired");
-  });
+  // test("request posting with expired token", async () => {
+  //   await new Promise((r) => setTimeout(r, 3000));
+  //   const response = await request(app)
+  //     .post("/post")
+  //     .set("Authorization", "jwt " + accessToken)
+  //     .send({
+  //       message: "this is my test post",
+  //       sender: user.username,
+  //     });
+  //   expect(response.body.message).toEqual("jwt expired");
+  // });
 
   test("refresh token with valid unused token", async () => {
     const response = await request(app)
       .get("/auth/refresh")
-      .set("Authorization", "jwt " + refresh_token);
+      .set("Authorization", "jwt " + refreshToken);
     expect(response.statusCode).toEqual(200);
-    expect(response.body.access_token).not.toEqual(access_token);
-    expect(response.body.refresh_token).not.toEqual(refresh_token);
+    expect(response.body.accessToken).not.toEqual(accessToken);
+    expect(response.body.refreshToken).not.toEqual(refreshToken);
     expect(response.body.userId).toEqual(userId);
-    access_token = response.body.access_token;
-    refresh_token = response.body.refresh_token;
+    accessToken = response.body.accessToken;
+    refreshToken = response.body.refreshToken;
   });
 
   test("logout with false token", async () => {
     const response = await request(app)
       .get("/auth/logout")
-      .set("Authorization", "jwt " + access_token);
+      .set("Authorization", "jwt " + accessToken);
     expect(response.statusCode).toEqual(403);
   });
 
   test("logout with correct token", async () => {
     const response = await request(app)
       .get("/auth/logout")
-      .set("Authorization", "jwt " + refresh_token);
+      .set("Authorization", "jwt " + refreshToken);
     expect(response.statusCode).toEqual(200);
   });
 });

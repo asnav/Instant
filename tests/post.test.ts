@@ -2,7 +2,6 @@ import request from "supertest";
 import app from "../server.js";
 import mongoose from "mongoose";
 import Post from "../models/post_model.js";
-import User from "../models/user_model.js";
 
 const user = {
   username: "user",
@@ -12,7 +11,6 @@ const user = {
 let token: string;
 
 beforeAll(async () => {
-  await User.deleteMany();
   await Post.deleteMany();
   await request(app).post("/auth/register").send(user);
   token = (
@@ -20,11 +18,10 @@ beforeAll(async () => {
       identifier: user.username,
       password: user.password,
     })
-  ).body.access_token;
+  ).body.accessToken;
 });
 
 afterAll(async () => {
-  await User.deleteMany();
   await Post.deleteMany();
   await mongoose.connection.close();
 });

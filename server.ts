@@ -4,6 +4,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import post_router from "./routers/post_router.js";
 import auth_router from "./routers/auth_router.js";
+import file_router from "./routers/file_router.js";
+
 import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import http from "http";
@@ -18,11 +20,12 @@ db.on("error", (error) => {
 db.once("open", () => console.log("connected to mongo"));
 
 const app = express();
-app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true, limit: "1mb" }));
 app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads"));
 app.use("/post", post_router);
 app.use("/auth", auth_router);
+app.use("/file", file_router);
 
 if (process.env.NODE_ENV == "development") {
   const options = {

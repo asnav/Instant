@@ -24,7 +24,7 @@ beforeAll(async () => {
       identifier: user.username,
       password: user.password,
     })
-  ).body.access_token;
+  ).body.accessToken;
   clientSocket = Client(`http://localhost:${process.env.PORT}`, {
     auth: { token: `jwt ${token}` },
   });

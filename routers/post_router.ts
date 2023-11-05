@@ -48,7 +48,7 @@ router.get("/", get_posts);
  *    parameters:
  *      - in: path
  *        name: id
- *        description: the id of the requested post (optional).
+ *        description: the id of the requested post.
  *        schema:
  *          type: string
  *        required: true

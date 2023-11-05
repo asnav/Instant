@@ -10,7 +10,8 @@
     "test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests",
     "post-test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests/post.test.js",
     "auth-test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests/auth.test.js",
-    "socket-test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests/socket.test.js"
+    "socket-test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests/socket.test.js",
+    "file-test": "tsc && jest --detectOpenHandles --forceExit ./dist/tests/file.test.js"
   },
   "author": "Asaf Navon",
   "license": "ISC",
@@ -22,6 +23,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.2",
+    "multer": "^1.4.5-lts.1",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2"
   },
@@ -31,6 +33,7 @@
     "@types/jest": "^29.5.5",
     "@types/jsonwebtoken": "^9.0.3",
     "@types/mongoose": "^5.11.97",
+    "@types/multer": "^1.4.9",
     "@types/supertest": "^2.0.14",
     "@types/swagger-jsdoc": "^6.0.1",
     "@types/swagger-ui-express": "^4.1.4",
