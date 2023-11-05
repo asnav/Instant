@@ -6,10 +6,7 @@ const router = express.Router();
 const base = "http://192.168.68.105:3000/";
 const storage = multer.diskStorage({
   destination: "./uploads",
-  filename: (req: Request, file: unknown, cb) => {
-    console.log("multer storage callback");
-    cb(null, Date.now() + ".jpg"); //Appending .jpg
-  },
+  filename: (req: Request, file: unknown, cb) => cb(null, Date.now() + ".jpg"),
 });
 
 const upload = multer({ storage: storage });
@@ -36,7 +33,6 @@ const upload = multer({ storage: storage });
  *        description: file uploaded successfully
  */
 router.post("/upload", upload.single("file"), (req: Request, res: Response) => {
-  console.log("router.post(/file: " + base + req.file.path);
   if (req.file) res.status(200).send({ url: base + req.file.path });
   else res.status(400).send("something went wrong");
 });
