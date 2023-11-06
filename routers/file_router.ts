@@ -6,7 +6,8 @@ const router = express.Router();
 const base = "http://192.168.68.105:3000/";
 const storage = multer.diskStorage({
   destination: "./uploads",
-  filename: (req: Request, file: unknown, cb) => cb(null, Date.now() + ".jpg"),
+  filename: (req: Request, file: unknown, cb) =>
+    cb(null, req.params.id + ".jpg"),
 });
 
 const upload = multer({ storage: storage });
@@ -32,10 +33,14 @@ const upload = multer({ storage: storage });
  *      200:
  *        description: file uploaded successfully
  */
-router.post("/upload", upload.single("file"), (req: Request, res: Response) => {
-  if (req.file) res.status(200).send({ url: base + req.file.path });
-  else res.status(400).send("something went wrong");
-});
+router.post(
+  "/upload/:id",
+  upload.single("file"),
+  (req: Request, res: Response) => {
+    if (req.file) res.status(200).send({ url: base + req.file.path });
+    else res.status(400).send("something went wrong");
+  }
+);
 
 export = router;
 
