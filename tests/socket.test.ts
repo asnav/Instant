@@ -2,36 +2,28 @@ import server from "../app.js";
 import mongoose from "mongoose";
 import Client, { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
-
 import request from "supertest";
-import User from "../models/user_model.js";
-import Post from "../models/post_model.js";
 
 let clientSocket: Socket<DefaultEventsMap, DefaultEventsMap>;
 const user = {
-  username: "user",
-  email: "user@email.com",
+  identifier: "test",
   password: "Password123",
 };
-let token: string;
+let tokens: { accessToken: string; refreshToken: string; userId: string };
 
 beforeAll(async () => {
-  await User.deleteMany();
-  await Post.deleteMany();
-  await request(server).post("/auth/register").send(user);
-  token = (
-    await request(server).post("/auth/login").send({
-      identifier: user.username,
-      password: user.password,
-    })
-  ).body.accessToken;
+  tokens = (await request(server).post("/auth/login").send(user)).body;
   clientSocket = Client(`http://localhost:${process.env.PORT}`, {
-    auth: { token: `jwt ${token}` },
+    auth: { token: `jwt ${tokens.accessToken}` },
   });
   new Promise((resolve) => clientSocket.on("connect", () => resolve(true)));
 });
 
-afterAll(() => {
+afterAll(async () => {
+  await request(server)
+    .get("/auth/logout")
+    .set("Authorization", "jwt " + tokens.refreshToken)
+    .send();
   server.close();
   clientSocket.close();
   mongoose.connection.close();

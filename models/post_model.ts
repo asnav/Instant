@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const post_schema = new mongoose.Schema({
-  message: {
+  text: {
     type: String,
     required: true,
   },
-  sender: {
+  owner: {
     type: String,
     required: true,
   },

@@ -6,23 +6,23 @@ import { Types } from "mongoose";
 
 const get_posts = async (req: Request, res: Response) => {
   //in the future: implement an algorithm to get relevant posts for the requesting user instead of getting all posts from the db.
-  if (req.query.sender == null) {
+  if (req.query.owner == null) {
     await Post.find()
       .then((posts) => res.status(200).send(posts))
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
       );
   } else {
-    let senderId: Types.ObjectId;
+    let ownerId: Types.ObjectId;
     try {
-      const sender = await User.findOne({ username: req.query.sender });
-      if (sender) senderId = sender._id;
-      else return sendError(res, 400, "sender doesn't exist");
+      const owner = await User.findOne({ username: req.query.owner });
+      if (owner) ownerId = owner._id;
+      else return sendError(res, 400, "owner doesn't exist");
     } catch {
-      sendError(res, 400, "failed finding sender, please try again later");
+      sendError(res, 400, "failed finding owner, please try again later");
     }
 
-    Post.find({ sender: senderId })
+    Post.find({ owner: ownerId })
       .then((posts) => res.status(200).send(posts))
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
@@ -41,10 +41,10 @@ const get_post_by_id = async (req: Request, res: Response) => {
 };
 
 const add_new_post = async (req: Request, res: Response) => {
-  if (!req.body.message) return sendError(res, 400, "post missing");
+  if (!req.body.text) return sendError(res, 400, "post missing");
   const post = new Post({
-    message: req.body.message,
-    sender: req.userId,
+    text: req.body.text,
+    owner: req.userId,
   });
 
   post
@@ -56,12 +56,12 @@ const add_new_post = async (req: Request, res: Response) => {
 };
 
 const update_post = async (req: Request, res: Response) => {
-  if (!req.body.message) return sendError(res, 400, "post missing");
+  if (!req.body.text) return sendError(res, 400, "post missing");
 
   const post = new Post({
     _id: req.params.id,
-    message: req.body.message,
-    sender: req.userId,
+    text: req.body.text,
+    owner: req.userId,
   });
   Post.findByIdAndUpdate(req.params.id, post)
     .then((old_post) => {

@@ -15,14 +15,14 @@ const router = express.Router();
  *  get:
  *    parameters:
  *      - in: query
- *        name: sender
- *        description: get only posts by a specific sender (optional).
+ *        name: owner
+ *        description: get only posts of a specific owner (optional).
  *        schema:
  *          type: string
  *        required: false
  *    summary: Request posts
  *    tags: [Post]
- *    description: to request a spesific post insert it's id as a path. if there is no post with the specified id a n empty array wil be returned. if no id is provided the server will retrieve all posts.
+ *    description: get all posts or posts of a spesific owner specified by its username.
  *    responses:
  *      200:
  *        description: post/s retrieved.
@@ -184,26 +184,26 @@ export default router;
  *    Post:
  *      type: object
  *      required:
- *        - message
+ *        - text
  *      properties:
- *        message:
+ *        text:
  *          type: string
- *          description: The post's content
+ *          description: The post's text
  *      example:
- *        message: 'message'
+ *        text: 'text'
  *
  *    RetrievedPost:
  *      type: object
  *      required:
- *        - message
- *        - sender
+ *        - text
+ *        - owner
  *        - _id
  *        - __v
  *      properties:
- *        message:
+ *        text:
  *          type: string
- *          description: The post's content
- *        sender:
+ *          description: The post's text
+ *        owner:
  *          type: string
  *          description: The username of the user who owns the post
  *        _id:

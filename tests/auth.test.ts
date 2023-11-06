@@ -2,40 +2,28 @@ import request from "supertest";
 import app from "../server.js";
 import mongoose from "mongoose";
 import User from "../models/user_model.js";
+import Post from "../models/post_model.js";
 
-beforeAll(async () => {
-  await User.deleteMany();
-});
+const user = {
+  username: "test", //add as reserved usernames in code
+  email: "test@test.com", //add as reserved email in code
+  password: "Password123",
+};
+let tokens: { accessToken: string; refreshToken: string; userId: string };
 
-afterAll(async () => {
-  await User.deleteMany();
-  await mongoose.connection.close();
-});
+beforeAll(async () => await User.deleteOne({ username: "test" }));
+afterAll(async () => await mongoose.connection.close());
 
 describe("Authentication Tests", () => {
-  const user = {
-    username: "username",
-    email: "email@test.com",
-    password: "Password123",
-  };
-  let accessToken: string;
-  let refreshToken: string;
-  let userId: string;
-
   test("request posting with no token", async () => {
     const response = await request(app).post("/post").send({
-      message: "this is my test post",
-      sender: user.username,
+      text: "this is my test post",
     });
     expect(response.statusCode).toEqual(401);
   });
 
   test("register", async () => {
-    const response = await request(app).post("/auth/register").send({
-      username: user.username,
-      email: user.email,
-      password: user.password,
-    });
+    const response = await request(app).post("/auth/register").send(user);
     expect(response.statusCode).toEqual(200);
   });
 
@@ -65,6 +53,10 @@ describe("Authentication Tests", () => {
     expect(response.body.refreshToken).not.toBeUndefined();
     expect(response.body.accessToken).not.toEqual(response.body.refreshToken);
     expect(response.body.userId).not.toBeUndefined();
+    await request(app)
+      .get("/auth/logout")
+      .set("Authorization", "jwt " + response.body.refreshToken)
+      .send();
   });
 
   test("login with email and password", async () => {
@@ -77,14 +69,12 @@ describe("Authentication Tests", () => {
     expect(response.body.refreshToken).not.toBeUndefined();
     expect(response.body.accessToken).not.toEqual(response.body.refreshToken);
     expect(response.body.userId).not.toBeUndefined();
-    accessToken = response.body.accessToken;
-    refreshToken = response.body.refreshToken;
-    userId = response.body.userId;
+    tokens = response.body;
   });
 
   test("login with unregistered identifier", async () => {
     const response = await request(app).post("/auth/login").send({
-      identifier: "unregistered",
+      identifier: "unregistered", //add as reserved usernames in code
       password: user.password,
     });
     expect(response.statusCode).toEqual(400);
@@ -112,15 +102,16 @@ describe("Authentication Tests", () => {
   test("request posting with valid token", async () => {
     const response = await request(app)
       .post("/post")
-      .set("Authorization", "jwt " + accessToken)
-      .send({ message: "this is my test post" });
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({ text: "this is my test post" });
     expect(response.statusCode).toEqual(200);
+    await Post.deleteOne({ owner: tokens.userId });
   });
 
   test("request posting with invalid token", async () => {
     const response = await request(app)
       .post("/post")
-      .set("Authorization", "jwt " + refreshToken)
+      .set("Authorization", "jwt " + tokens.refreshToken)
       .send({
         message: "this is my test post",
         sender: user.username,
@@ -143,28 +134,28 @@ describe("Authentication Tests", () => {
   // });
 
   test("refresh token with valid unused token", async () => {
+    await new Promise((r) => setTimeout(r, 1000));
     const response = await request(app)
       .get("/auth/refresh")
-      .set("Authorization", "jwt " + refreshToken);
+      .set("Authorization", "jwt " + tokens.refreshToken);
     expect(response.statusCode).toEqual(200);
-    expect(response.body.accessToken).not.toEqual(accessToken);
-    expect(response.body.refreshToken).not.toEqual(refreshToken);
-    expect(response.body.userId).toEqual(userId);
-    accessToken = response.body.accessToken;
-    refreshToken = response.body.refreshToken;
+    expect(response.body.accessToken).not.toEqual(tokens.accessToken);
+    expect(response.body.refreshToken).not.toEqual(tokens.refreshToken);
+    expect(response.body.userId).toEqual(tokens.userId);
+    tokens = response.body;
   });
 
   test("logout with false token", async () => {
     const response = await request(app)
       .get("/auth/logout")
-      .set("Authorization", "jwt " + accessToken);
+      .set("Authorization", "jwt " + tokens.accessToken);
     expect(response.statusCode).toEqual(403);
   });
 
   test("logout with correct token", async () => {
     const response = await request(app)
       .get("/auth/logout")
-      .set("Authorization", "jwt " + refreshToken);
+      .set("Authorization", "jwt " + tokens.refreshToken);
     expect(response.statusCode).toEqual(200);
   });
 });
