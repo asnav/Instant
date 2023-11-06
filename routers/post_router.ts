@@ -195,26 +195,26 @@ export default router;
  *    RetrievedPost:
  *      type: object
  *      required:
+ *        - postId
  *        - text
- *        - owner
- *        - _id
- *        - __v
+ *        - ownerId
+ *        - username
  *      properties:
+ *        postId:
+ *          type: string
+ *          description: The post's id
  *        text:
  *          type: string
  *          description: The post's text
- *        owner:
+ *        ownerId:
  *          type: string
- *          description: The username of the user who owns the post
- *        _id:
+ *          description: the post's owner's id
+ *        username:
  *          type: string
- *          description: the post's id
- *        __v:
- *          type: integer
- *          description: version of the document in the db
+ *          description: the post's owner's username
  *      example:
- *        message: 'message'
- *        sender: 'bob'
- *        _id: 652068d7522c8b946f994f93
- *        __v: 0
+ *        postId: '654928872fa620d727b1c18e'
+ *        text: 'this is the post's text'
+ *        ownerId: '6548d7e0b5552db03c4e0b58'
+ *        username: 'human'
  */

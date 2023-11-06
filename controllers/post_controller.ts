@@ -7,8 +7,18 @@ import { Types } from "mongoose";
 const get_posts = async (req: Request, res: Response) => {
   //in the future: implement an algorithm to get relevant posts for the requesting user instead of getting all posts from the db.
   if (req.query.owner == null) {
-    await Post.find()
-      .then((posts) => res.status(200).send(posts))
+    const users = await User.find();
+    Post.find()
+      .then((posts) =>
+        res.status(200).send(
+          posts.map((post) => ({
+            postId: post._id,
+            text: post.text,
+            ownerId: post.owner,
+            username: users.find((user) => user._id.toString() == post.owner),
+          }))
+        )
+      )
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
       );
@@ -23,7 +33,16 @@ const get_posts = async (req: Request, res: Response) => {
     }
 
     Post.find({ owner: ownerId })
-      .then((posts) => res.status(200).send(posts))
+      .then((posts) =>
+        res.status(200).send(
+          posts.map((post) => ({
+            postId: post._id,
+            text: post.text,
+            ownerId: post.owner,
+            username: req.query.owner,
+          }))
+        )
+      )
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
       );
@@ -32,8 +51,15 @@ const get_posts = async (req: Request, res: Response) => {
 
 const get_post_by_id = async (req: Request, res: Response) => {
   Post.findById(req.params.id)
-    .then((post) => {
-      post ? res.status(200).send(post) : sendError(res, 404, "post not found");
+    .then(async (post) => {
+      post
+        ? res.status(200).send({
+            postId: post._id,
+            text: post.text,
+            ownerId: post.owner,
+            username: (await User.findOne({ _id: post.owner })).username,
+          })
+        : sendError(res, 404, "post not found");
     })
     .catch(() =>
       sendError(res, 400, "failed retrieving post, please try again later")
