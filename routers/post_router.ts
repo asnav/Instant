@@ -214,7 +214,7 @@ export default router;
  *          description: the post's owner's username
  *      example:
  *        postId: '654928872fa620d727b1c18e'
- *        text: 'this is the post's text'
+ *        text: 'this is the posts text'
  *        ownerId: '6548d7e0b5552db03c4e0b58'
  *        username: 'human'
  */

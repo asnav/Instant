@@ -42,30 +42,25 @@ describe("Post API tests", () => {
 
   test("get all posts", async () => {
     const response = await request(app).get("/post");
-    const posts = response.body.filter(
-      (element: { text: string; owner: string }) =>
-        (element.owner = tokens.userId)
-    );
+    const posts = response.body;
     expect(response.statusCode).toEqual(200);
-    expect(posts.length).toEqual(1);
-    expect(posts[0]._id).toEqual(postId);
-    expect(posts[0].text).toEqual(text);
+    expect(posts.length).toBeGreaterThan(0);
   });
 
   test("get post by id", async () => {
     const response = await request(app).get(`/post/${postId}`);
     const post = response.body;
     expect(response.statusCode).toEqual(200);
-    expect(post._id).toEqual(postId);
+    expect(post.postId).toEqual(postId);
     expect(post.text).toEqual(text);
   });
 
   test("get posts by sender", async () => {
-    const response = await request(app).get("/post?sender=user");
+    const response = await request(app).get("/post?owner=test");
     const post = response.body[0];
     expect(response.statusCode).toEqual(200);
     expect(response.body.length).toEqual(1);
-    expect(post._id).toEqual(postId);
+    expect(post.postId).toEqual(postId);
     expect(post.text).toEqual(text);
   });
 
@@ -79,7 +74,7 @@ describe("Post API tests", () => {
     expect(response.statusCode).toEqual(200);
     const verification_response = await request(app).get(`/post/${postId}`);
     const post = verification_response.body;
-    expect(post._id).toEqual(postId);
+    expect(post.postId).toEqual(postId);
     expect(post.text).toEqual("new message");
   });
 

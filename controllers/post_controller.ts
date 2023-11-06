@@ -15,7 +15,8 @@ const get_posts = async (req: Request, res: Response) => {
             postId: post._id,
             text: post.text,
             ownerId: post.owner,
-            username: users.find((user) => user._id.toString() == post.owner),
+            username: users.find((user) => user._id.toString() == post.owner)
+              .username,
           }))
         )
       )
