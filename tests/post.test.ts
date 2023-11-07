@@ -30,11 +30,11 @@ describe("Post API tests", () => {
       .post("/post")
       .set("Authorization", "jwt " + tokens.accessToken)
       .send({ text: text });
-    postId = response.body._id;
+    postId = response.body.postId;
     expect(response.statusCode).toEqual(200);
     const newPost = response.body;
     expect(newPost.text).toEqual(text);
-    const response2 = await request(app).get("/post/" + newPost._id);
+    const response2 = await request(app).get("/post/" + newPost.postId);
     expect(response2.statusCode).toEqual(200);
     const post2 = response2.body;
     expect(post2.text).toEqual(text);

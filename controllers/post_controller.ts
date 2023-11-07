@@ -4,21 +4,37 @@ import { Request, Response } from "express";
 import sendError from "./helpers/send_error.js";
 import { Types } from "mongoose";
 
+const formatPost = (
+  post: {
+    _id: Types.ObjectId;
+    __v?: number;
+    owner: string;
+    text: string;
+  },
+  username: string
+) => ({
+  postId: post._id,
+  text: post.text,
+  ownerId: post.owner,
+  username: username,
+});
+
 const get_posts = async (req: Request, res: Response) => {
   //in the future: implement an algorithm to get relevant posts for the requesting user instead of getting all posts from the db.
   if (req.query.owner == null) {
     const users = await User.find();
     Post.find()
       .then((posts) =>
-        res.status(200).send(
-          posts.map((post) => ({
-            postId: post._id,
-            text: post.text,
-            ownerId: post.owner,
-            username: users.find((user) => user._id.toString() == post.owner)
-              .username,
-          }))
-        )
+        res
+          .status(200)
+          .send(
+            posts.map((post) =>
+              formatPost(
+                post,
+                users.find((user) => user._id.toString() == post.owner).username
+              )
+            )
+          )
       )
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
@@ -35,14 +51,11 @@ const get_posts = async (req: Request, res: Response) => {
 
     Post.find({ owner: ownerId })
       .then((posts) =>
-        res.status(200).send(
-          posts.map((post) => ({
-            postId: post._id,
-            text: post.text,
-            ownerId: post.owner,
-            username: req.query.owner,
-          }))
-        )
+        res
+          .status(200)
+          .send(
+            posts.map((post) => formatPost(post, req.query.owner as string))
+          )
       )
       .catch(() =>
         sendError(res, 400, "failed retrieving posts, please try again later")
@@ -54,12 +67,14 @@ const get_post_by_id = async (req: Request, res: Response) => {
   Post.findById(req.params.id)
     .then(async (post) => {
       post
-        ? res.status(200).send({
-            postId: post._id,
-            text: post.text,
-            ownerId: post.owner,
-            username: (await User.findOne({ _id: post.owner })).username,
-          })
+        ? res
+            .status(200)
+            .send(
+              formatPost(
+                post,
+                (await User.findOne({ _id: post.owner })).username
+              )
+            )
         : sendError(res, 404, "post not found");
     })
     .catch(() =>
@@ -76,7 +91,13 @@ const add_new_post = async (req: Request, res: Response) => {
 
   post
     .save()
-    .then((post) => res.status(200).send(post))
+    .then(async (post) =>
+      res
+        .status(200)
+        .send(
+          formatPost(post, (await User.findOne({ _id: post.owner })).username)
+        )
+    )
     .catch(() =>
       sendError(res, 400, "failed saving post, please try again later")
     );
