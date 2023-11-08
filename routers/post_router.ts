@@ -4,6 +4,7 @@ import {
   add_new_post,
   get_post_by_id,
   update_post,
+  delete_post,
 } from "../controllers/post_controller.js";
 import { authenticate } from "../controllers/auth_controller.js";
 
@@ -16,13 +17,13 @@ const router = express.Router();
  *    parameters:
  *      - in: query
  *        name: owner
- *        description: get only posts of a specific owner (optional).
+ *        description: get only posts of a specific owner by id (optional).
  *        schema:
  *          type: string
  *        required: false
  *    summary: Request posts
  *    tags: [Post]
- *    description: get all posts or posts of a spesific owner specified by its username.
+ *    description: get all posts or posts of a spesific owner specified by its id.
  *    responses:
  *      200:
  *        description: post/s retrieved.
@@ -61,9 +62,7 @@ router.get("/", get_posts);
  *        content:
  *          application/json:
  *            schema:
- *              type: array
- *              items:
- *                $ref: '#/components/schemas/RetrievedPost'
+ *              $ref: '#/components/schemas/RetrievedPost'
  *      400:
  *        description: Request failed, the error message will be attached.
  *        content:
@@ -132,7 +131,7 @@ router.post("/", authenticate, add_new_post);
  *        schema:
  *          type: string
  *        required: true
- *    summary: update an existing post by id
+ *    summary: update post
  *    tags: [Post]
  *    security:
  *      - bearerAuth: []
@@ -142,6 +141,7 @@ router.post("/", authenticate, add_new_post);
  *        application/json:
  *          schema:
  *            $ref: '#/components/schemas/Post'
+ *    description: update an existing post by post-id
  *    responses:
  *      200:
  *        description: post updated successfully
@@ -171,6 +171,40 @@ router.post("/", authenticate, add_new_post);
  *              status: 'post not found'
  */
 router.put("/:id", authenticate, update_post);
+
+/**
+ * @swagger
+ * /post/delete/{id}:
+ *  get:
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        description: the id of the post to be deleted.
+ *        schema:
+ *          type: string
+ *        required: true
+ *    summary: delete post
+ *    tags: [Post]
+ *    security:
+ *      - bearerAuth: []
+ *    description: delete post by post-id
+ *    responses:
+ *      200:
+ *        description: post deleted.
+ *      400:
+ *        description: Request failed, the error message will be attached.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ *      404:
+ *        description: post not found.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ */
+router.get("/delete/:id", authenticate, delete_post);
 
 export default router;
 /**

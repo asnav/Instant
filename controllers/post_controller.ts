@@ -40,16 +40,7 @@ const get_posts = async (req: Request, res: Response) => {
         sendError(res, 400, "failed retrieving posts, please try again later")
       );
   } else {
-    let ownerId: Types.ObjectId;
-    try {
-      const owner = await User.findOne({ username: req.query.owner });
-      if (owner) ownerId = owner._id;
-      else return sendError(res, 400, "owner doesn't exist");
-    } catch {
-      sendError(res, 400, "failed finding owner, please try again later");
-    }
-
-    Post.find({ owner: ownerId })
+    Post.find({ owner: req.query.owner })
       .then((posts) =>
         res
           .status(200)
@@ -121,4 +112,15 @@ const update_post = async (req: Request, res: Response) => {
     );
 };
 
-export { get_posts, get_post_by_id, add_new_post, update_post };
+const delete_post = async (req: Request, res: Response) => {
+  Post.findByIdAndDelete(req.params.id)
+    .then((old_post) => {
+      if (old_post) res.sendStatus(200);
+      else sendError(res, 404, "post not found");
+    })
+    .catch(() =>
+      sendError(res, 400, "failed deleting post, please try again later ")
+    );
+};
+
+export { get_posts, get_post_by_id, add_new_post, update_post, delete_post };

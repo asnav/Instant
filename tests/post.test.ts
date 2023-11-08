@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../server.js";
 import mongoose from "mongoose";
-import Post from "../models/post_model.js";
+// import Post from "../models/post_model.js";
 
 const user = {
   identifier: "test",
@@ -13,7 +13,7 @@ beforeAll(async () => {
   tokens = (await request(app).post("/auth/login").send(user)).body;
 });
 afterAll(async () => {
-  await Post.deleteMany({ owner: tokens.userId });
+  // await Post.deleteMany({ owner: tokens.userId });
   await request(app)
     .get("/auth/logout")
     .set("Authorization", "jwt " + tokens.refreshToken)
@@ -56,7 +56,7 @@ describe("Post API tests", () => {
   });
 
   test("get posts by sender", async () => {
-    const response = await request(app).get("/post?owner=test");
+    const response = await request(app).get("/post?owner=" + tokens.userId);
     const post = response.body[0];
     expect(response.statusCode).toEqual(200);
     expect(response.body.length).toEqual(1);
@@ -84,5 +84,13 @@ describe("Post API tests", () => {
       .set("Authorization", "jwt " + tokens.accessToken)
       .send({ text: "new message" });
     expect(response.statusCode).toEqual(404);
+  });
+
+  test("delete post", async () => {
+    const response = await request(app)
+      .get(`/post/delete/${postId}`)
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send();
+    expect(response.statusCode).toEqual(200);
   });
 });
