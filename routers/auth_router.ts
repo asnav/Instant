@@ -1,7 +1,11 @@
 import express from "express";
 import {
   register,
+  changePassword,
+  changeEmail,
+  changeUsername,
   login,
+  authenticate,
   refresh,
   logout,
 } from "../controllers/auth_controller";
@@ -34,6 +38,98 @@ router.post("/register", register);
 
 /**
  * @swagger
+ * /change/password
+ *  post:
+ *    summary: Change password
+ *    tags: [Auth]
+ *    security:
+ *      - bearerAuth: []
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/Passwords'
+ *    responses:
+ *      200:
+ *        description: Password changed successfully
+ *      400:
+ *        description: Password change failed
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ */
+router.post("/change/password", authenticate, changePassword);
+
+/**
+ * @swagger
+ * /change/email
+ *  post:
+ *    summary: Change email
+ *    tags: [Auth]
+ *    security:
+ *      - bearerAuth: []
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            required:
+ *              - email
+ *            properties:
+ *              email:
+ *                type: string
+ *                description: The new email address to replace the current one
+ *            example:
+ *              email: 'bob@gmail.com'
+ *      200:
+ *        description: Email changed successfully
+ *      400:
+ *        description: Email change failed
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ */
+router.post("/change/email", authenticate, changeEmail);
+
+/**
+ * @swagger
+ * /change/username
+ *  post:
+ *    summary: Change username
+ *    tags: [Auth]
+ *    security:
+ *      - bearerAuth: []
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            required:
+ *              - username
+ *            properties:
+ *              username:
+ *                type: string
+ *                description: The new username to replace the current one
+ *            example:
+ *              username: 'bobi'
+ *      200:
+ *        description: Username changed successfully
+ *      400:
+ *        description: Username change failed
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Error'
+ */
+router.post("/change/username", authenticate, changeUsername);
+
+/**
+ * @swagger
  * /auth/login:
  *  post:
  *    summary: login with a registerd user
@@ -50,7 +146,7 @@ router.post("/register", register);
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/Tokens'
+ *              $ref: '#/components/schemas/AuthInfo'
  *      400:
  *        description: Login failed
  *        content:
@@ -75,7 +171,7 @@ router.post("/login", login);
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/Tokens'
+ *              $ref: '#/components/schemas/AuthInfo'
  *      401:
  *        description: Authentication missing
  *        content:
@@ -173,26 +269,36 @@ export default router;
  *        identifier: 'bob@gmail.com'
  *        password: '123456'
  *
- *    Tokens:
+ *    AuthInfo:
  *      type: object
  *      required:
+ *        - userId
+ *        - email
+ *        - username
  *        - accessToken
  *        - refreshToken
- *        - userId
  *      properties:
+ *        userId:
+ *          type: string
+ *          description: The User's ID
+ *        email:
+ *          type: string
+ *          description: The User's email address
+ *        username:
+ *          type: string
+ *          description: The User's username
  *        accessToken:
  *          type: string
  *          description: The JWT access token
  *        refreshToken:
  *          type: string
  *          description: The JWT refresh token
- *        userId:
- *          type: string
- *          description: The User's ID
  *      example:
+ *        userId: '123asdg87g8s'
+ *        email: 'user@gmail.com'
+ *        username: 'user'
  *        accessToken: '123cd123x1xx1'
  *        refreshToken: '134r2134cr1x3c'
- *        userId: '123asdg87g8s'
  *
  *    Error:
  *      type: object

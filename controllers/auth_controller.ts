@@ -12,13 +12,9 @@ const register = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (username == null) {
-    return sendError(res, 400, "username missing");
-  } else if (email == null) {
-    return sendError(res, 400, "email missing");
-  } else if (password == null) {
-    return sendError(res, 400, "password missing");
-  }
+  if (!username) return sendError(res, 400, "username missing");
+  if (!email) return sendError(res, 400, "email missing");
+  if (!password) return sendError(res, 400, "password missing");
 
   try {
     let user = await User.findOne({ username: username });
@@ -43,6 +39,47 @@ const register = async (req: Request, res: Response) => {
     .then(() => res.sendStatus(200))
     .catch(() => {
       sendError(res, 400, "registration failed please try againg later");
+    });
+};
+
+const changePassword = async (req: Request, res: Response) => {
+  if (!req.body.oldPassword) return sendError(res, 400, "old password missing");
+  if (!req.body.newPassword) return sendError(res, 400, "new password missing");
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return sendError(res, 400, "user not found");
+
+    if (!(await bcrypt.compare(req.body.oldPassword, user.password)))
+      return sendError(res, 400, "old password is incorrect");
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(req.body.newPassword, salt);
+    user.password = password_hash;
+    await user.save();
+    res.status(200).send();
+  } catch (err) {
+    return sendError(res, 400, "something went wrong, please try again later");
+  }
+};
+
+const changeEmail = async (req: Request, res: Response) => {
+  if (!req.body.email) return sendError(res, 400, "email missing");
+  User.findByIdAndUpdate(req.params.id, { email: req.body.email })
+    .then(() => res.status(200).send())
+    .catch((error) => {
+      console.log(error);
+      sendError(res, 400, "something went wrong, please try again later");
+    });
+};
+
+const changeUsername = async (req: Request, res: Response) => {
+  if (!req.body.username) return sendError(res, 400, "email missing");
+  User.findByIdAndUpdate(req.params.id, { username: req.body.username })
+    .then(() => res.status(200).send())
+    .catch((error) => {
+      console.log(error);
+      sendError(res, 400, "something went wrong, please try again later");
     });
 };
 
@@ -80,9 +117,11 @@ const login = async (req: Request, res: Response) => {
     user.tokens.push(refresh_token);
     await user.save();
     res.status(200).send({
+      userId: user._id,
+      email: user.email,
+      username: user.username,
       accessToken: access_token,
       refreshToken: refresh_token,
-      userId: user._id,
     });
   } catch (err) {
     return sendError(res, 400, "failed logging in please try againg later");
@@ -129,9 +168,11 @@ const refresh = async (req: Request, res: Response) => {
         user.tokens[user.tokens.indexOf(token)] = refresh_token;
         await user.save();
         res.status(200).send({
+          userId: user._id,
+          email: user.email,
+          username: user.username,
           accessToken: access_token,
           refreshToken: refresh_token,
-          userId: user._id,
         });
       })
       .catch((err) => sendError(res, 403, err));
@@ -166,4 +207,13 @@ const logout = async (req: Request, res: Response) => {
   });
 };
 
-export { register, login, authenticate, refresh, logout };
+export {
+  register,
+  changePassword,
+  changeEmail,
+  changeUsername,
+  login,
+  authenticate,
+  refresh,
+  logout,
+};
