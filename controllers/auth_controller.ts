@@ -47,7 +47,7 @@ const changePassword = async (req: Request, res: Response) => {
   if (!req.body.newPassword) return sendError(res, 400, "new password missing");
 
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.userId);
     if (!user) return sendError(res, 400, "user not found");
 
     if (!(await bcrypt.compare(req.body.oldPassword, user.password)))
@@ -65,7 +65,7 @@ const changePassword = async (req: Request, res: Response) => {
 
 const changeEmail = async (req: Request, res: Response) => {
   if (!req.body.email) return sendError(res, 400, "email missing");
-  User.findByIdAndUpdate(req.params.id, { email: req.body.email })
+  User.findByIdAndUpdate(req.userId, { email: req.body.email })
     .then(() => res.status(200).send())
     .catch((error) => {
       console.log(error);
@@ -75,7 +75,7 @@ const changeEmail = async (req: Request, res: Response) => {
 
 const changeUsername = async (req: Request, res: Response) => {
   if (!req.body.username) return sendError(res, 400, "email missing");
-  User.findByIdAndUpdate(req.params.id, { username: req.body.username })
+  User.findByIdAndUpdate(req.userId, { username: req.body.username })
     .then(() => res.status(200).send())
     .catch((error) => {
       console.log(error);

@@ -99,6 +99,61 @@ describe("Authentication Tests", () => {
     expect(response.body.message).toEqual("incorrect identifier or password");
   });
 
+  /// add tests for change password email and username ///
+  test("update password with wrong old password", async () => {
+    const response = await request(app)
+      .post("/auth/change/password")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({
+        oldPassword: user.password + "1",
+        newPassword: user.password + "1",
+      });
+    expect(response.statusCode).toEqual(400);
+    expect(response.body.message).toEqual("old password is incorrect");
+  });
+
+  test("update password", async () => {
+    const response = await request(app)
+      .post("/auth/change/password")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({
+        oldPassword: user.password,
+        newPassword: user.password + "1",
+      });
+    expect(response.statusCode).toEqual(200);
+    await request(app)
+      .post("/auth/change/password")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({
+        oldPassword: user.password + "1",
+        newPassword: user.password,
+      });
+  });
+
+  test("update email", async () => {
+    const response = await request(app)
+      .post("/auth/change/email")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({ email: "another@test.com" }); //save to reserved email addresses
+    expect(response.statusCode).toEqual(200);
+    await request(app)
+      .post("/auth/change/email")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({ email: user.email });
+  });
+
+  test("update username", async () => {
+    const response = await request(app)
+      .post("/auth/change/username")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({ username: "testUser" }); // save to reserved usernames
+    expect(response.statusCode).toEqual(200);
+    await request(app)
+      .post("/auth/change/username")
+      .set("Authorization", "jwt " + tokens.accessToken)
+      .send({ username: user.username });
+  });
+
   test("request posting with valid token", async () => {
     const response = await request(app)
       .post("/post")
