@@ -38,7 +38,7 @@ router.post("/register", register);
 
 /**
  * @swagger
- * /change/password
+ * /auth/change/password:
  *  post:
  *    summary: Change password
  *    tags: [Auth]
@@ -64,7 +64,7 @@ router.post("/change/password", authenticate, changePassword);
 
 /**
  * @swagger
- * /change/email
+ * /auth/change/email:
  *  post:
  *    summary: Change email
  *    tags: [Auth]
@@ -97,7 +97,7 @@ router.post("/change/email", authenticate, changeEmail);
 
 /**
  * @swagger
- * /change/username
+ * /auth/change/username:
  *  post:
  *    summary: Change username
  *    tags: [Auth]
