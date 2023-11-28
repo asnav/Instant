@@ -84,6 +84,7 @@ router.post("/change/password", authenticate, changePassword);
  *                description: The new email address to replace the current one
  *            example:
  *              email: 'bob@gmail.com'
+ *    responses:
  *      200:
  *        description: Email changed successfully
  *      400:
@@ -117,6 +118,7 @@ router.post("/change/email", authenticate, changeEmail);
  *                description: The new username to replace the current one
  *            example:
  *              username: 'bobi'
+ *    responses:
  *      200:
  *        description: Username changed successfully
  *      400:
